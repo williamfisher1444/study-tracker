@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Учёба">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Трекер учёбы</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Onest:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0d0d1a;
+            --bg-card: #1a1a2e;
+            --bg-elevated: #252542;
+            --accent: #6ee7b7;
+            --accent-dim: #34d399;
+            --accent-glow: rgba(110, 231, 183, 0.3);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8888a0;
+            --text-muted: #555570;
+            --danger: #f87171;
+            --warning: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Onest', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .container {
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px 16px;
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .header h1 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent) 0%, #a7f3d0 50%, var(--accent-dim) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:active {
+            transform: scale(0.97);
+        }
+
+        .stat-card.highlight {
+            background: linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-card) 100%);
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .stat-number {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-card.highlight .stat-number {
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Streak Banner */
+        .streak-banner {
+            background: linear-gradient(135deg, #1e3a5f 0%, #1a1a2e 100%);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border: 1px solid rgba(110, 231, 183, 0.2);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .streak-icon {
+            font-size: 2.5rem;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .streak-info h3 {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+
+        .streak-info p {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .streak-days {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .streak-days .number {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .streak-days .label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        /* Calendar */
+        .calendar-section {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-title {
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendar-nav button {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            border: none;
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .calendar-nav button:active {
+            transform: scale(0.92);
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+
+        .weekday {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 8px 0;
+        }
+
+        .days-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .day:not(.empty):not(.future):active {
+            transform: scale(0.88);
+        }
+
+        .day.empty {
+            cursor: default;
+        }
+
+        .day.future {
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .day.today {
+            background: var(--bg-elevated);
+            border: 2px solid var(--accent);
+        }
+
+        .day.studied {
+            background: var(--accent);
+            color: var(--bg-dark);
+            font-weight: 600;
+            box-shadow: 0 2px 8px var(--accent-glow);
+        }
+
+        .day.studied.today {
+            border-color: var(--text-primary);
+        }
+
+        .day.other-month {
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+
+        /* Today Button */
+        .mark-today-btn {
+            width: 100%;
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+            color: var(--bg-dark);
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+
+        .mark-today-btn:active {
+            transform: scale(0.97);
+        }
+
+        .mark-today-btn.marked {
+            background: var(--bg-elevated);
+            color: var(--text-primary);
+            border: 2px solid var(--accent);
+        }
+
+        .mark-today-btn .icon {
+            font-size: 1.3rem;
+        }
+
+        /* Progress Bar */
+        .progress-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeInUp 0.6s ease-out 0.5s both;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .progress-percent {
+            font-family: 'Unbounded', sans-serif;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: var(--bg-elevated);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+            border-radius: 10px;
+            transition: width 0.5s ease-out;
+        }
+
+        .progress-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        /* Reminder Section */
+        .reminder-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeInUp 0.6s ease-out 0.6s both;
+        }
+
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .reminder-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reminder-title .icon {
+            font-size: 1.2rem;
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--bg-elevated);
+            border-radius: 28px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--accent);
+        }
+
+        .toggle-switch input:checked + .toggle-slider::before {
+            transform: translateX(24px);
+            background: var(--bg-dark);
+        }
+
+        /* Time Picker */
+        .time-picker-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .time-picker-row.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .time-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .time-input {
+            background: var(--bg-elevated);
+            border: none;
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-family: 'Unbounded', sans-serif;
+            font-size: 1rem;
+            width: 100px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .time-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        /* Weekend Toggle */
+        .weekend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .weekend-row.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .weekend-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Status message */
+        .reminder-status {
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            text-align: center;
+            display: none;
+        }
+
+        .reminder-status.show {
+            display: block;
+        }
+
+        .reminder-status.success {
+            background: rgba(110, 231, 183, 0.15);
+            color: var(--accent);
+        }
+
+        .reminder-status.error {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--danger);
+        }
+
+        .reminder-status.info {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--warning);
+        }
+
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Ripple effect */
+        .day::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s;
+        }
+
+        .day.just-marked::after {
+            animation: ripple 0.4s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                opacity: 0.5;
+                transform: scale(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(2);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📚 Трекер учёбы</h1>
+            <p>Отмечай дни, когда учишься</p>
+        </header>
+
+        <div class="stats-grid">
+            <div class="stat-card highlight">
+                <div class="stat-number" id="totalDays">0</div>
+                <div class="stat-label">Всего дней</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="thisMonth">0</div>
+                <div class="stat-label">В этом месяце</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="thisWeek">0</div>
+                <div class="stat-label">На неделе</div>
+            </div>
+        </div>
+
+        <div class="streak-banner">
+            <div class="streak-icon">🔥</div>
+            <div class="streak-info">
+                <h3>Текущая серия</h3>
+                <p>Учись каждый день!</p>
+            </div>
+            <div class="streak-days">
+                <div class="number" id="streak">0</div>
+                <div class="label">дней</div>
+            </div>
+        </div>
+
+        <section class="calendar-section">
+            <div class="calendar-header">
+                <h2 class="calendar-title" id="monthYear">Январь 2025</h2>
+                <div class="calendar-nav">
+                    <button id="prevMonth">←</button>
+                    <button id="nextMonth">→</button>
+                </div>
+            </div>
+            <div class="weekdays">
+                <div class="weekday">Пн</div>
+                <div class="weekday">Вт</div>
+                <div class="weekday">Ср</div>
+                <div class="weekday">Чт</div>
+                <div class="weekday">Пт</div>
+                <div class="weekday">Сб</div>
+                <div class="weekday">Вс</div>
+            </div>
+            <div class="days-grid" id="daysGrid"></div>
+        </section>
+
+        <button class="mark-today-btn" id="markTodayBtn">
+            <span class="icon">✓</span>
+            <span class="text">Отметить сегодня</span>
+        </button>
+
+        <section class="progress-section">
+            <div class="progress-header">
+                <span class="progress-title">Прогресс за месяц</span>
+                <span class="progress-percent" id="progressPercent">0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div class="progress-label" id="progressLabel">0 из 0 дней</div>
+        </section>
+
+        <section class="reminder-section">
+            <div class="reminder-header">
+                <span class="reminder-title">
+                    <span class="icon">🔔</span>
+                    Напоминания
+                </span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="reminderToggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+            
+            <div class="time-picker-row disabled" id="timeRow">
+                <span class="time-label">Время напоминания</span>
+                <input type="time" class="time-input" id="reminderTime" value="21:00">
+            </div>
+
+            <div class="weekend-row disabled" id="weekendRow">
+                <span class="weekend-label">Напоминать в выходные</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="weekendToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="reminder-status" id="reminderStatus"></div>
+        </section>
+    </div>
+
+    <script>
+        // State
+        let studyDays = JSON.parse(localStorage.getItem('studyDays') || '[]');
+        let currentDate = new Date();
+        let viewDate = new Date();
+
+        // Reminder settings
+        let reminderSettings = JSON.parse(localStorage.getItem('reminderSettings') || JSON.stringify({
+            enabled: false,
+            time: '21:00',
+            weekends: true
+        }));
+
+        const MONTHS = [
+            'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
+            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        ];
+
+        // Utils
+        function formatDate(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function isToday(date) {
+            const today = new Date();
+            return formatDate(date) === formatDate(today);
+        }
+
+        function isFuture(date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const checkDate = new Date(date);
+            checkDate.setHours(0, 0, 0, 0);
+            return checkDate > today;
+        }
+
+        function isStudied(date) {
+            return studyDays.includes(formatDate(date));
+        }
+
+        function toggleDay(date) {
+            const dateStr = formatDate(date);
+            const index = studyDays.indexOf(dateStr);
+            
+            if (index > -1) {
+                studyDays.splice(index, 1);
+            } else {
+                studyDays.push(dateStr);
+            }
+            
+            localStorage.setItem('studyDays', JSON.stringify(studyDays));
+            updateUI();
+        }
+
+        // Stats calculations
+        function calculateStreak() {
+            if (studyDays.length === 0) return 0;
+            
+            const sorted = [...studyDays].sort().reverse();
+            const today = formatDate(new Date());
+            const yesterday = formatDate(new Date(Date.now() - 86400000));
+            
+            if (sorted[0] !== today && sorted[0] !== yesterday) {
+                return 0;
+            }
+            
+            let streak = 1;
+            for (let i = 0; i < sorted.length - 1; i++) {
+                const current = new Date(sorted[i]);
+                const next = new Date(sorted[i + 1]);
+                const diff = (current - next) / 86400000;
+                
+                if (diff === 1) {
+                    streak++;
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+
+        function getThisMonthCount() {
+            const now = new Date();
+            const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+            return studyDays.filter(d => d.startsWith(monthStart)).length;
+        }
+
+        function getThisWeekCount() {
+            const now = new Date();
+            const weekAgo = new Date(now.getTime() - 7 * 86400000);
+            return studyDays.filter(d => {
+                const date = new Date(d);
+                return date >= weekAgo && date <= now;
+            }).length;
+        }
+
+        function getMonthProgress() {
+            const now = new Date();
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const dayOfMonth = now.getDate();
+            const studied = getThisMonthCount();
+            return {
+                studied,
+                total: dayOfMonth,
+                daysInMonth,
+                percent: Math.round((studied / dayOfMonth) * 100)
+            };
+        }
+
+        // Calendar rendering
+        function renderCalendar() {
+            const grid = document.getElementById('daysGrid');
+            const year = viewDate.getFullYear();
+            const month = viewDate.getMonth();
+            
+            document.getElementById('monthYear').textContent = `${MONTHS[month]} ${year}`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            
+            let startOffset = firstDay.getDay() - 1;
+            if (startOffset < 0) startOffset = 6;
+            
+            grid.innerHTML = '';
+            
+            const prevMonthLast = new Date(year, month, 0);
+            for (let i = startOffset - 1; i >= 0; i--) {
+                const day = document.createElement('div');
+                day.className = 'day other-month empty';
+                day.textContent = prevMonthLast.getDate() - i;
+                grid.appendChild(day);
+            }
+            
+            for (let d = 1; d <= lastDay.getDate(); d++) {
+                const date = new Date(year, month, d);
+                const day = document.createElement('div');
+                day.className = 'day';
+                day.textContent = d;
+                
+                if (isToday(date)) day.classList.add('today');
+                if (isFuture(date)) day.classList.add('future');
+                if (isStudied(date)) day.classList.add('studied');
+                
+                if (!isFuture(date)) {
+                    day.addEventListener('click', () => {
+                        toggleDay(date);
+                        day.classList.add('just-marked');
+                        setTimeout(() => day.classList.remove('just-marked'), 400);
+                    });
+                }
+                
+                grid.appendChild(day);
+            }
+            
+            const totalCells = grid.children.length;
+            const remaining = 42 - totalCells;
+            for (let i = 1; i <= remaining && totalCells + i <= 42; i++) {
+                const day = document.createElement('div');
+                day.className = 'day other-month empty';
+                day.textContent = i;
+                grid.appendChild(day);
+            }
+        }
+
+        // Update all UI elements
+        function updateUI() {
+            document.getElementById('totalDays').textContent = studyDays.length;
+            document.getElementById('thisMonth').textContent = getThisMonthCount();
+            document.getElementById('thisWeek').textContent = getThisWeekCount();
+            document.getElementById('streak').textContent = calculateStreak();
+            
+            const progress = getMonthProgress();
+            document.getElementById('progressPercent').textContent = `${progress.percent}%`;
+            document.getElementById('progressFill').style.width = `${progress.percent}%`;
+            document.getElementById('progressLabel').textContent = 
+                `${progress.studied} из ${progress.total} дней (до конца месяца: ${progress.daysInMonth - progress.total})`;
+            
+            const btn = document.getElementById('markTodayBtn');
+            const todayStudied = isStudied(new Date());
+            btn.classList.toggle('marked', todayStudied);
+            btn.querySelector('.text').textContent = todayStudied ? 'Сегодня отмечено ✓' : 'Отметить сегодня';
+            
+            renderCalendar();
+        }
+
+        // ============ NOTIFICATIONS ============
+
+        function showStatus(message, type) {
+            const status = document.getElementById('reminderStatus');
+            status.textContent = message;
+            status.className = 'reminder-status show ' + type;
+            setTimeout(() => status.classList.remove('show'), 4000);
+        }
+
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showStatus('Браузер не поддерживает уведомления', 'error');
+                return false;
+            }
+
+            if (Notification.permission === 'granted') {
+                return true;
+            }
+
+            if (Notification.permission === 'denied') {
+                showStatus('Уведомления заблокированы. Разреши в настройках браузера', 'error');
+                return false;
+            }
+
+            const permission = await Notification.requestPermission();
+            return permission === 'granted';
+        }
+
+        async function scheduleReminder() {
+            const registration = await navigator.serviceWorker.ready;
+            
+            // Cancel existing notifications
+            const existingNotifications = await registration.getNotifications({ tag: 'study-reminder' });
+            existingNotifications.forEach(n => n.close());
+
+            if (!reminderSettings.enabled) return;
+
+            // Check if today is already marked
+            if (isStudied(new Date())) {
+                return; // Don't schedule if already studied today
+            }
+
+            // Check weekend setting
+            const today = new Date().getDay();
+            const isWeekend = today === 0 || today === 6;
+            if (isWeekend && !reminderSettings.weekends) {
+                return;
+            }
+
+            // Calculate time until reminder
+            const [hours, minutes] = reminderSettings.time.split(':').map(Number);
+            const now = new Date();
+            const reminderTime = new Date();
+            reminderTime.setHours(hours, minutes, 0, 0);
+
+            // If time already passed today, schedule for tomorrow
+            if (reminderTime <= now) {
+                reminderTime.setDate(reminderTime.getDate() + 1);
+            }
+
+            const delay = reminderTime - now;
+
+            // Use setTimeout to trigger notification (works for PWA)
+            setTimeout(() => {
+                if (reminderSettings.enabled && !isStudied(new Date())) {
+                    showNotification();
+                }
+            }, delay);
+        }
+
+        function showNotification() {
+            if (Notification.permission === 'granted') {
+                const notification = new Notification('📚 Ты сегодня учился?', {
+                    body: 'Не забудь отметить день в трекере!',
+                    icon: 'icon-192.png',
+                    tag: 'study-reminder',
+                    silent: true,
+                    requireInteraction: false
+                });
+
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+
+                // Schedule next reminder
+                setTimeout(scheduleReminder, 1000);
+            }
+        }
+
+        function saveReminderSettings() {
+            localStorage.setItem('reminderSettings', JSON.stringify(reminderSettings));
+            scheduleReminder();
+        }
+
+        function updateReminderUI() {
+            const toggle = document.getElementById('reminderToggle');
+            const timeRow = document.getElementById('timeRow');
+            const weekendRow = document.getElementById('weekendRow');
+            const timeInput = document.getElementById('reminderTime');
+            const weekendToggle = document.getElementById('weekendToggle');
+
+            toggle.checked = reminderSettings.enabled;
+            timeInput.value = reminderSettings.time;
+            weekendToggle.checked = reminderSettings.weekends;
+
+            if (reminderSettings.enabled) {
+                timeRow.classList.remove('disabled');
+                weekendRow.classList.remove('disabled');
+            } else {
+                timeRow.classList.add('disabled');
+                weekendRow.classList.add('disabled');
+            }
+        }
+
+        // Reminder event listeners
+        document.getElementById('reminderToggle').addEventListener('change', async (e) => {
+            if (e.target.checked) {
+                const granted = await requestNotificationPermission();
+                if (granted) {
+                    reminderSettings.enabled = true;
+                    showStatus('Напоминания включены', 'success');
+                } else {
+                    e.target.checked = false;
+                    reminderSettings.enabled = false;
+                }
+            } else {
+                reminderSettings.enabled = false;
+                showStatus('Напоминания выключены', 'info');
+            }
+            saveReminderSettings();
+            updateReminderUI();
+        });
+
+        document.getElementById('reminderTime').addEventListener('change', (e) => {
+            reminderSettings.time = e.target.value;
+            saveReminderSettings();
+            showStatus(`Напоминание в ${e.target.value}`, 'success');
+        });
+
+        document.getElementById('weekendToggle').addEventListener('change', (e) => {
+            reminderSettings.weekends = e.target.checked;
+            saveReminderSettings();
+            showStatus(e.target.checked ? 'Включая выходные' : 'Без выходных', 'info');
+        });
+
+        // Event listeners
+        document.getElementById('prevMonth').addEventListener('click', () => {
+            viewDate.setMonth(viewDate.getMonth() - 1);
+            renderCalendar();
+        });
+
+        document.getElementById('nextMonth').addEventListener('click', () => {
+            viewDate.setMonth(viewDate.getMonth() + 1);
+            renderCalendar();
+        });
+
+        document.getElementById('markTodayBtn').addEventListener('click', () => {
+            toggleDay(new Date());
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => {
+                    console.log('Service Worker registered');
+                    scheduleReminder();
+                })
+                .catch(err => console.log('SW registration failed:', err));
+        }
+
+        // Init
+        updateUI();
+        updateReminderUI();
+    </script>
+</body>
+</html>
